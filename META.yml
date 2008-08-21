@@ -1,6 +1,6 @@
 ---
 name: App-CCSV
-version: 0.01
+version: 0.02
 author:
   - 'Karlheinz Zoechling <kh@ibeatgarry.com>'
 abstract: Command line "auto split" for easy working on CSV files via perl -ne
@@ -13,7 +13,7 @@ build_requires:
 provides:
   App::CCSV:
     file: lib/App/CCSV.pm
-    version: 0.01
+    version: 0.02
   TieCSV:
     file: lib/App/CCSV/TieCSV.pm
     version: 0.01

@@ -13,7 +13,7 @@ our $csvout;
 
 our @EXPORT = qw(cprint csay parse $csv);
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 sub import 
 {
@@ -25,12 +25,12 @@ sub import
 
 sub _init
 {
-	my $out = length($_[-1]) > 1 && $#_ > 0 ? pop : ''; # last argument length > 1 means csvout config section if more than 1 argument
+	my $out = length($_[-1] || '') > 1 && $#_ > 0 ? pop : ''; # last argument length > 1 means csvout config section if more than 1 argument
 	my ($quote,$sep,$escape,$eol) = @_;
 	#print join "|", ($quote, $sep, $escape, $eol,"\n");
 	my $cfgfile = $ENV{CCSVCONF} || $ENV{HOME} || '~';
 	$cfgfile = $cfgfile . '/.CCSVConf' unless $ENV{CCSVCONF};
-	if (length($quote) <= 1) # length > 1 specifies config section
+	if (length($quote || '') <= 1) # length > 1 specifies config section
 	{
 		$csv = Text::CSV_XS->new( {
         	        quote_char => $quote || '"',
@@ -50,33 +50,33 @@ sub _init
 		# CSV:
 		if (!@_ || ($#_ == 0 and $quote eq '')) # no override(s) from command line
 		{
-			confme($csv,$config{CCSV}) if $config{CCSV};
+			_confme($csv,$config{CCSV}) if $config{CCSV};
 		} elsif (length($quote) > 1) # config section
 		{
 				die "no config section with name <$quote> could be found in $cfgfile\n" unless $config{CCSV}->{names}->{$quote};
-				confme($csv,$config{CCSV}->{names}->{$quote});
+				_confme($csv,$config{CCSV}->{names}->{$quote});
 		}
 
-		confme($csv,$config{CCSV}->{overrideall}) if $config{CCSV}->{overrideall}; 
+		_confme($csv,$config{CCSV}->{overrideall}) if $config{CCSV}->{overrideall}; 
 		# different CSVOUT?
 		if ($out) # get from config section
 		{
 			 die "no config section with name <$out> could be found in $cfgfile\n" unless $config{CCSV}->{names}->{$out};
 			 $csvout = Text::CSV_XS->new(); 
-			 confme($csvout,$config{CCSV}->{names}->{$out});
+			 _confme($csvout,$config{CCSV}->{names}->{$out});
 		} elsif ($config{CCSV}->{out})
 		{
 			$csvout = Text::CSV_XS->new();
-			confme($csvout,$config{CCSV}->{out});
+			_confme($csvout,$config{CCSV}->{out});
 		}
 	} else # die if config file is needed but not present:
 	{
-		die "1st param char length > 1 means input config section, but no readable config file could be found at $cfgfile \n" if (length($quote) > 1);
-		 die "last param length > 1 means output config section, but no readable config file could be found at $cfgfile\n" if (length($out) > 1);
+		die "1st param char length > 1 means input config section, but no readable config file could be found at $cfgfile \n" if (length($quote || '') > 1);
+		 die "last param length > 1 means output config section, but no readable config file could be found at $cfgfile\n" if (length($out || '') > 1);
 	}
 }
 
-sub confme
+sub _confme
 {
 	# ($csv,$conf);
 	my $conf = $_[1];
@@ -119,7 +119,7 @@ sub parse
 
 __END__
 
-
+=pod
 
 =head1 NAME
 
